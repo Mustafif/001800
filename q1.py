@@ -7,16 +7,18 @@ import matplotlib.pyplot as plt
 mu = 2
 sigma = 3
 alpha = 0.99
-# we will loop through all sample sizes provided
+# we will loop through all sample sizes provided 2-3)
 sample_sizes = [10**6, 10**7, 10**8]
 
-# Theoretical values
+# Theoretical values as calculated in 1)
 VaR_99_theoretical = mu + sigma * norm.ppf(alpha)
 ES_99_theoretical = mu + sigma * (norm.pdf(norm.ppf(alpha)) / (1 - alpha))
 
 # Function to compute empirical VaR and ES
-# As defined in Lecture 5, the empiricial Var is defined by the 99th percentile of the sample
-# The empirical ES is defined by the average of the values greater than or equal to the empirical Var
+# As defined in Lecture 5, the empiricial Var
+# is defined by the 99th percentile of the sample
+# The empirical ES is defined by the average of the values
+# greater than or equal to the empirical Var
 def empirical_var_es(data, alpha=0.99):
     var = np.percentile(data, alpha * 100)
     es = np.mean(data[data >= var])
@@ -28,8 +30,11 @@ for N in sample_sizes:
     np.random.seed(42)  # For reproducibility
     sample = np.random.normal(mu, sigma, N)
 
+    # a) Standardizing the data and Testing for normality
     # Standardize the data
-    standardized_sample = (sample - mu) / sigma
+    mean = np.mean(sample)
+    std = np.std(sample)
+    standardized_sample = (sample - mean) / std
 
     # Test for normality
     stat1, p_value1 = kstest(standardized_sample, 'norm')
@@ -39,15 +44,17 @@ for N in sample_sizes:
 
     # Parametric estimates (if normal)
     if is_normal:
-        VaR_99_parametric = mu + sigma * norm.ppf(alpha)
-        ES_99_parametric = mu + sigma * (norm.pdf(norm.ppf(alpha)) / (1 - alpha))
+        VaR_99_parametric = mean + std * norm.ppf(alpha)
+        ES_99_parametric = mean + std * (norm.pdf(norm.ppf(alpha)) / (1 - alpha))
     else:
         VaR_99_parametric = None
         ES_99_parametric = None
 
+    # b) Empirical estimates
     # Empirical estimates
     VaR_99_empirical, ES_99_empirical = empirical_var_es(sample, alpha)
 
+    # c) Compute the absolute errors and compare with true values in the results
     # Compute absolute errors
     abs_error_parametric = (abs(VaR_99_parametric - VaR_99_theoretical), abs(ES_99_parametric - ES_99_theoretical)) if is_normal else (None, None)
     abs_error_empirical = (abs(VaR_99_empirical - VaR_99_theoretical), abs(ES_99_empirical - ES_99_theoretical))
