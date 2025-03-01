@@ -57,7 +57,9 @@ for N in sample_sizes:
     # c) Compute the absolute errors and compare with true values in the results
     # Compute absolute errors
     abs_error_parametric = (abs(VaR99_param - VaR99_theo), abs(ES99_param - ES99_theo)) if is_normal else (None, None)
+    abs_error_param_perc = (abs_error_parametric[0] / VaR99_theo)*100, (abs_error_parametric[1] / ES99_theo)*100 if is_normal else (None, None)
     abs_error_empirical = (abs(VaR99_emp - VaR99_theo), abs(ES99_emp - ES99_theo))
+    abs_error_empirical_perc = (abs_error_empirical[0] / VaR99_theo)*100, (abs_error_empirical[1] / ES99_theo)*100
 
     # Store results
     results[N] = {
@@ -68,6 +70,8 @@ for N in sample_sizes:
         "ES99_emp": ES99_emp,
         "abs_error_parametric": abs_error_parametric,
         "abs_error_empirical": abs_error_empirical,
+        "abs_error_empirical_perc": abs_error_empirical_perc,
+        "abs_error_param_perc": abs_error_param_perc,
         "is_normal": is_normal
     }
 
@@ -75,11 +79,16 @@ for N in sample_sizes:
 for N, res in results.items():
     print(f"N = {N}")
     print(f"  Normality confirmed: {res['is_normal']}")
-    print(f"  VaR_99 Parametric: {res['VaR99_param']}, Abs Error: {res['abs_error_parametric'][0]}")
-    print(f"  ES_99 Parametric: {res['ES99_param']}, Abs Error: {res['abs_error_parametric'][1]}")
-    print(f"  VaR_99 Empirical: {res['VaR99_emp']}, Abs Error: {res['abs_error_empirical'][0]}")
-    print(f"  ES_99 Empirical: {res['ES99_emp']}, Abs Error: {res['abs_error_empirical'][1]}")
+    print(f"  VaR_99 Parametric: {res['VaR99_param']:.4}, Abs Error: {res['abs_error_parametric'][0]:.2e}")
+    print(f"  ES_99 Parametric: {res['ES99_param']:.4}, Abs Error: {res['abs_error_parametric'][1]:.2e}")
+    print(f"  VaR_99 Empirical: {res['VaR99_emp']:.4}, Abs Error: {res['abs_error_empirical'][0]:.2e}")
+    print(f"  ES_99 Empirical: {res['ES99_emp']:.4}, Abs Error: {res['abs_error_empirical'][1]:.2e}")
     print("-")
+    print("Percentages:")
+    print(f"  VaR_99 Parametric: {res['abs_error_param_perc'][0]:.2%}")
+    print(f"  ES_99 Parametric: {res['abs_error_param_perc'][1]:.2%}")
+    print(f"  VaR_99 Empirical: {res['abs_error_empirical_perc'][0]:.2%}")
+    print(f"  ES_99 Empirical: {res['abs_error_empirical_perc'][1]:.2%}")
 
     # Normality check with histograms
     sample = results[N]['data']
@@ -96,49 +105,3 @@ for N, res in results.items():
     # Show the plot
     plt.show()
     plt.close()
-
-
-# Create figure with subplots
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 12))
-# Plot 1: VaR Comparison
-var_empirical = [results[N]['VaR99_emp'] for N in sample_sizes]
-var_parametric = [results[N]['VaR99_param'] for N in sample_sizes]
-var_theoretical = [VaR99_theo] * len(sample_sizes)
-x_pos = np.arange(len(sample_sizes))
-width = 0.25
-ax1.bar(x_pos - width, var_empirical, width, label='Empirical VaR', color='skyblue')
-ax1.bar(x_pos, var_parametric, width, label='Parametric VaR', color='lightcoral')
-ax1.bar(x_pos + width, var_theoretical, width, label='Theoretical VaR', color='lightgreen')
-ax1.set_xticks(x_pos)
-ax1.set_xticklabels([f'N=10^{int(np.log10(N))}' for N in sample_sizes])
-ax1.set_title('VaR₀.₉₉ Comparison Across Sample Sizes')
-ax1.set_ylabel('Value at Risk (VaR)')
-ax1.legend()
-ax1.grid(True)
-
-# Plot 2: Absolute Errors
-# This will help us visualize the effect on absolute errors as sample size increases
-var_errors_empirical = [results[N]['abs_error_empirical'][0] for N in sample_sizes]
-var_errors_parametric = [results[N]['abs_error_parametric'][0] for N in sample_sizes]
-es_errors_empirical = [results[N]['abs_error_empirical'][1] for N in sample_sizes]
-es_errors_parametric = [results[N]['abs_error_parametric'][1] for N in sample_sizes]
-
-x_pos = np.arange(len(sample_sizes))
-width = 0.2
-
-ax2.bar(x_pos - 1.5*width, var_errors_empirical, width, label='VaR Empirical Error', color='skyblue')
-ax2.bar(x_pos - 0.5*width, var_errors_parametric, width, label='VaR Parametric Error', color='lightcoral')
-ax2.bar(x_pos + 0.5*width, es_errors_empirical, width, label='ES Empirical Error', color='lightgreen')
-ax2.bar(x_pos + 1.5*width, es_errors_parametric, width, label='ES Parametric Error', color='lightpink')
-ax2.set_xticks(x_pos)
-ax2.set_xticklabels([f'N=10^{int(np.log10(N))}' for N in sample_sizes])
-ax2.set_title('Absolute Errors Comparison')
-ax2.set_ylabel('Absolute Error')
-ax2.legend()
-ax2.grid(True)
-ax2.set_yscale('log')  # Using log scale to better show error differences
-plt.tight_layout()
-# Save the figure
-filename = 'var_es_comparison.png'
-plt.savefig(filename, dpi=300, bbox_inches='tight')
-print(f"Plot saved as: {filename}")

@@ -12,7 +12,7 @@
 //   listing-index: (enabled: false),
 //   table-of-contents: none
 // )
-#set math.equation(numbering: "1.")
+#set math.equation(numbering: "(1)")
 #set heading(outlined: false, numbering: none)
 // #let h(title) = { heading(outlined: false, level: 1, numbering: none, title)}
 
@@ -49,80 +49,108 @@ $
 == 2-3) (a-c)
 
 All of these parts are done at the same time in our Python program, which will have comments
-to show where each part is completed. The following content is `q1.py`
+to show where each part is completed. The following content is `q1.py`.
 
 #raw(read("q1.py"), lang: "Python")
-#let terminal(
-  title: none,                // Title for the terminal
-  content,                    // The body content
-  fill: black,                // Background color of the terminal
-  text_color: white,          // Text color for the terminal content
-  title_color: luma(240),     // Title bar text color
-  title_bg_color: black,       // Title bar background color
-  radius: 6pt                 // Corner radius
-) = {
-  let stroke = black + 1pt     // Border color and width
 
-  // Outer box for the terminal
-  box(stroke: stroke, radius: radius)[
-    // Title bar (if title is provided)
-    #if title != none {
-      box(
-        fill: title_bg_color,
-        inset: 0.5em,
-        radius: (top-left: radius, top-right: radius),
-        width: 100%,
-        align(center)[#text(fill: title_color)[*#title*]]
-      )
-    }
-    // Terminal content area
-    #box(
-      fill: fill,
-      inset: (x: 1em, y: 0.7em),
-      radius: (bottom-left: radius, bottom-right: radius),
-      width: 100%,
-      text(fill: text_color)[#content]
-    )
-  ]
-}
-
-To get the results, we can run the program on the terminal:
-\
-#terminal(title: "Terminal", [
-  ```bash
-  $ python3 q1.py
-  N = 1000000
-    Normality confirmed: True
-    VaR_99 Parametric: 8.975556669822536, Abs Error: 0.003486952299985191
-    ES_99 Parametric: 9.992346866772403, Abs Error: 0.0032957942650142513
-    VaR_99 Empirical: 8.972412832156806, Abs Error: 0.006630789965715422
-    ES_99 Empirical: 9.982018640953951, Abs Error: 0.013624020083465638
-  -
-  N = 10000000
-    Normality confirmed: True
-    VaR_99 Parametric: 8.978946535236147, Abs Error: 9.708688637388718e-05
-    ES_99 Parametric: 9.995559381058833, Abs Error: 8.327997858437186e-05
-    VaR_99 Empirical: 8.977836858606143, Abs Error: 0.0012067635163788282
-    ES_99 Empirical: 9.99396136390425, Abs Error: 0.0016812971331674476
-  -
-  N = 100000000
-    Normality confirmed: True
-    VaR_99 Parametric: 8.979114004714269, Abs Error: 7.038259174763084e-05
-    ES_99 Parametric: 9.995786749743548, Abs Error: 0.0001440887061310292
-    VaR_99 Empirical: 8.978653808056245, Abs Error: 0.0003898140662759175
-    ES_99 Empirical: 9.995781538215402, Abs Error: 0.00013887717798510835
-  -
-  Plot saved as: var_es_comparison.png
-  ```
-])
-
-To better visualize the results, and how the error changes across sample sizes increasing, consider the following diagram:
+When we run the program (`$ python3 q1.py`), we get the following results which were reorganized
+in a table for a better reading experience.
 
 #figure(
-  image("var_es_comparison.png"),
-  caption: "VaR and ES Error Comparison across Sample Sizes"
+table(
+  rows: 4,
+  columns: 8,
+  ..csv("q1_var.csv").flatten()
+),
+caption: [$"VaR"_99$ Results for all sample sizes]
 )
 
-We are able to see in bottom diagram that as the sample sizes increases all errors
-are decreasing, thus becoming more accurate. We can also notice that for all sizes, the
-least accurate measurement is the empirical calculation.
+#figure(
+  table(
+    rows: 4,
+    columns: 8,
+    ..csv("q1_es.csv").flatten()
+  ),
+  caption: [$"ES"_99$ Results for all sample sizes]
+)
+
+From the results from both tables of VaR and ES respectively, we can notice that generally (apart for $"ES"_99$ errors from second sample size to third for parametic) as the sample sizes increases the error decreases,
+thus showing better accuracy. As shown in the code we used both the Shapiro Wilk test and the kstest (which is better for large sample sizes like ours) both are used to determine if the distribution is normal
+from our hypothesis test, checking if the p-value for both test is greater than 0.05 for which both did.
+
+We can also notice this in the following histograms:
+
+#align(center)[
+  #image("normality_check_1000000.png", width: 80%)
+  #image("normality_check_10000000.png", width: 80%)
+  #image("normality_check_100000000.png", width: 80%)
+]
+
+= Question 2
+For question 2 we consider the distribution where $L ~ "Exp"(4)$.
+
+== 1)
+To compute the theoretical values for value at risk and expected shortfall for an exponential distrubution with $alpha$ and $lambda$, we have the following
+formulas:
+
+$
+  "VaR"_(alpha)(L) = - ln(1-alpha)/lambda
+$<var_exp>
+
+$
+  "ES"_(alpha)(L) = (1-ln(1-alpha))/lambda
+$<es_exp>
+
+From the question we are given $alpha=0.99$ and $lambda=4$ which will be plugged into @var_exp and @es_exp for value at risk and expected shortfall respectively:
+
+$
+  "VaR"_(0.99)(L) &= - ln(1-0.99)/4\
+  &= 1.15
+$
+
+$
+  "ES"_(alpha)(L) &= (1-ln(1-0.99))/4\
+  &= 1.40
+$
+
+== 2-3) (a-c)
+
+All of these parts are done in the program `q2.py` where each part is commented. Compared to
+the first question the code has been much more organized.
+
+#raw(read("q2.py"), lang: "Python")
+
+
+When we run the program (`$ python3 q2.py`), we get the following results which were reorganized
+in a table for a better reading experience.
+
+#figure(
+table(
+  rows: 4,
+  columns: 8,
+  ..csv("q2_var.csv").flatten()
+),
+caption: [$"VaR"_99$ Results for all sample sizes]
+)
+
+#figure(
+  table(
+    rows: 4,
+    columns: 8,
+    ..csv("q2_es.csv").flatten()
+  ),
+  caption: [$"ES"_99$ Results for all sample sizes]
+)
+
+From our result we are able to see in this case the empirical results do much better compared to the parametric,
+the opposite from question 1. From there we are able to see that the empirical results' errors go down as each sample size
+increases thus increasing the accuracy while the parametrics' errors doesn't move much as sample size increases. The same
+can also be said for Expected Shortfall as well.
+
+To be able to view how the distribution looks like, consider the following histograms, which show that the distributions are exponential.
+
+#align(center)[
+  #image("var_es_plots_N_1000000.png", width: 80%)
+  #image("var_es_plots_N_10000000.png", width: 80%)
+  #image("var_es_plots_N_100000000.png", width: 80%)
+]

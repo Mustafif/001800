@@ -1,0 +1,4 @@
+Sample Size,Normality Confirmed,ES_99 Parametric,Abs Error ES_99 Parametric,ES_99 Parametric % Error,ES_99 Empirical,Abs Error ES_99 Empirical,ES_99 Empirical % Error
+1000000,True,9.992,3.30e-03,3.30%,9.982,1.36e-02,13.63%
+10000000,True,9.996,8.33e-05,0.08%,9.994,1.68e-03,1.68%
+100000000,True,9.996,1.44e-04,0.14%,9.996,1.39e-04,0.14%
